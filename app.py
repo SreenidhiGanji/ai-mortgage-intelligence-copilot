@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from src.analytics import calculate_basic_metrics, get_top_values, filter_dataframe, generate_business_summary
+from src.analytics import calculate_basic_metrics, get_top_values, filter_dataframe, generate_business_summary, get_chart_data
 from src.data_processor import load_csv, clean_hmda_data, add_business_labels
 
 st.set_page_config(
@@ -93,6 +93,39 @@ if uploaded_file is not None:
     st.subheader("Executive Business Summary")
     summary = generate_business_summary(metrics)
     st.write(summary)
+
+    st.subheader("Visual Analytics Dashboard")
+
+    # Loan Type Chart
+    loan_chart = get_chart_data(
+    filtered_df,
+    "loan_type_label"
+    )
+
+    if loan_chart is not None:
+        st.bar_chart(
+            loan_chart.set_index("loan_type_label")
+        )
+    # Action Taken Chart
+    action_chart = get_chart_data(
+    filtered_df,
+    "action_taken_label"
+    )
+
+    if action_chart is not None:
+        st.bar_chart(
+            action_chart.set_index("action_taken_label")
+        )
+    # Loan Purpose Chart
+    purpose_chart = get_chart_data(
+    filtered_df,
+    "loan_purpose_label"
+    )
+
+    if purpose_chart is not None:
+        st.bar_chart(
+            purpose_chart.set_index("loan_purpose_label")
+        )
 
 else:
     st.info("Please upload a HMDA CSV file to begin.")
