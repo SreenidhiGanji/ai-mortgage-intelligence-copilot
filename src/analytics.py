@@ -34,3 +34,26 @@ def get_top_values(df: pd.DataFrame, column_name: str, limit: int = 10):
         return None
 
     return df[column_name].value_counts().head(limit)
+
+def filter_dataframe(
+    df: pd.DataFrame,
+    state=None,
+    loan_type=None,
+    action_taken=None,
+    loan_purpose=None
+) -> pd.DataFrame:
+    filtered_df = df.copy()
+
+    if state and state != "All":
+        filtered_df = filtered_df[filtered_df["state_code"] == state]
+
+    if loan_type and loan_type != "All":
+        filtered_df = filtered_df[filtered_df["loan_type_label"] == loan_type]
+
+    if action_taken and action_taken != "All":
+        filtered_df = filtered_df[filtered_df["action_taken_label"] == action_taken]
+
+    if loan_purpose and loan_purpose != "All":
+        filtered_df = filtered_df[filtered_df["loan_purpose_label"] == loan_purpose]
+
+    return filtered_df
