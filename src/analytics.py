@@ -58,28 +58,11 @@ def filter_dataframe(
 
     return filtered_df
 
-def generate_business_summary(metrics: dict) -> str:
-    return (
-        f"This dataset contains {metrics['total_records']:,} mortgage applications. "
-        f"Out of these, {metrics['approved_count']:,} were originated and "
-        f"{metrics['denied_count']:,} were denied. "
-        f"The overall denial rate is {metrics['denial_rate']}%. "
-        f"The average loan amount is ${metrics['average_loan_amount']:,.2f}. "
-        "These metrics help identify lending performance, approval trends, and potential market risk."
-    )
-
 def get_chart_data(df, column_name):
     if column_name not in df.columns:
         return None
 
-    return (
-        df[column_name]
-        .value_counts()
-        .reset_index()
-        .rename(
-            columns={
-                "index": column_name,
-                column_name: "count"
-            }
-        )
-    )
+    chart_data = df[column_name].value_counts().reset_index()
+    chart_data.columns = [column_name, "count"]
+
+    return chart_data
