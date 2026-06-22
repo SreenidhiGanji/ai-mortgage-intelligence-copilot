@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from src.analytics import calculate_basic_metrics, get_top_values
-from src.data_processor import load_csv, clean_hmda_data
+from src.data_processor import load_csv, clean_hmda_data, add_business_labels
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -21,6 +21,7 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     raw_df = load_csv(uploaded_file)
     df = clean_hmda_data(raw_df)
+    df = add_business_labels(df)
 
     st.success("CSV uploaded successfully!")
     st.info("Data cleaned successfully: column names standardized, numeric fields converted, and duplicate records removed.")
@@ -49,14 +50,14 @@ if uploaded_file is not None:
         st.warning("state_code column not found.")
 
     st.subheader("Loan Type Distribution")
-    loan_types = get_top_values(df, "loan_type")
+    loan_types = get_top_values(df, "loan_type_label")
     if loan_types is not None:
         st.bar_chart(loan_types)
     else:
         st.warning("loan_type column not found.")
 
     st.subheader("Action Taken Distribution")
-    actions = get_top_values(df, "action_taken")
+    actions = get_top_values(df, "action_taken_label")
     if actions is not None:
         st.bar_chart(actions)
     else:
