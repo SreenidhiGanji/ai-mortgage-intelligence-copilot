@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 
+from src.analytics import calculate_basic_metrics, get_top_values
+
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
     page_icon="🏠",
@@ -8,10 +10,7 @@ st.set_page_config(
 )
 
 st.title("🏠 AI Mortgage Intelligence Copilot")
-
-st.write(
-    "Upload HMDA mortgage data and discover lending insights."
-)
+st.write("Upload HMDA mortgage data and discover lending insights.")
 
 uploaded_file = st.file_uploader(
     "Upload HMDA CSV file",
@@ -23,16 +22,42 @@ if uploaded_file is not None:
 
     st.success("CSV uploaded successfully!")
 
+    metrics = calculate_basic_metrics(df)
+
+    st.subheader("Mortgage Portfolio Summary")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Total Applications", metrics["total_records"])
+    col2.metric("Approved Loans", metrics["approved_count"])
+    col3.metric("Denied Loans", metrics["denied_count"])
+    col4.metric("Denial Rate", f'{metrics["denial_rate"]}%')
+
+    st.metric("Average Loan Amount", f'${metrics["average_loan_amount"]:,.2f}')
+
     st.subheader("Dataset Preview")
     st.dataframe(df.head())
 
-    st.subheader("Dataset Summary")
+    st.subheader("Top States")
+    top_states = get_top_values(df, "state_code")
+    if top_states is not None:
+        st.bar_chart(top_states)
+    else:
+        st.warning("state_code column not found.")
 
-    col1, col2, col3 = st.columns(3)
+    st.subheader("Loan Type Distribution")
+    loan_types = get_top_values(df, "loan_type")
+    if loan_types is not None:
+        st.bar_chart(loan_types)
+    else:
+        st.warning("loan_type column not found.")
 
-    col1.metric("Total Records", len(df))
-    col2.metric("Total Columns", len(df.columns))
-    col3.metric("Missing Values", int(df.isnull().sum().sum()))
+    st.subheader("Action Taken Distribution")
+    actions = get_top_values(df, "action_taken")
+    if actions is not None:
+        st.bar_chart(actions)
+    else:
+        st.warning("action_taken column not found.")
 
     st.subheader("Column Names")
     st.write(list(df.columns))
