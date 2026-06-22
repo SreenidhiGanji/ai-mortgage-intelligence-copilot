@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from src.analytics import calculate_basic_metrics, get_top_values
+from src.data_processor import load_csv, clean_hmda_data
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -18,9 +19,11 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
+    raw_df = load_csv(uploaded_file)
+    df = clean_hmda_data(raw_df)
 
     st.success("CSV uploaded successfully!")
+    st.info("Data cleaned successfully: column names standardized, numeric fields converted, and duplicate records removed.")
 
     metrics = calculate_basic_metrics(df)
 
