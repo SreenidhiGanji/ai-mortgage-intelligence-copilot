@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from src.analytics import calculate_basic_metrics, get_top_values, filter_dataframe
+from src.analytics import calculate_basic_metrics, get_top_values, filter_dataframe, generate_business_summary
 from src.data_processor import load_csv, clean_hmda_data, add_business_labels
 
 st.set_page_config(
@@ -89,6 +89,10 @@ if uploaded_file is not None:
 
     st.subheader("Column Names")
     st.write(list(df.columns))
+
+    st.subheader("Executive Business Summary")
+    summary = generate_business_summary(metrics)
+    st.write(summary)
 
 else:
     st.info("Please upload a HMDA CSV file to begin.")

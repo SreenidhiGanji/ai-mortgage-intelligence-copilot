@@ -57,3 +57,13 @@ def filter_dataframe(
         filtered_df = filtered_df[filtered_df["loan_purpose_label"] == loan_purpose]
 
     return filtered_df
+
+def generate_business_summary(metrics: dict) -> str:
+    return (
+        f"This dataset contains {metrics['total_records']:,} mortgage applications. "
+        f"Out of these, {metrics['approved_count']:,} were originated and "
+        f"{metrics['denied_count']:,} were denied. "
+        f"The overall denial rate is {metrics['denial_rate']}%. "
+        f"The average loan amount is ${metrics['average_loan_amount']:,.2f}. "
+        "These metrics help identify lending performance, approval trends, and potential market risk."
+    )
