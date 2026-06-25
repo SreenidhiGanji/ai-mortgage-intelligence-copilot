@@ -29,9 +29,7 @@ st.set_page_config(
 )
 
 st.title("🏠 AI Mortgage Intelligence Copilot")
-st.write(
-    "Upload HMDA mortgage data and discover lending insights."
-)
+st.write("Upload HMDA mortgage data and discover lending insights.")
 
 uploaded_file = st.file_uploader(
     "Upload HMDA CSV file",
@@ -39,7 +37,6 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-
     # Load and clean data
     raw_df = load_csv(uploaded_file)
     df = clean_hmda_data(raw_df)
@@ -48,41 +45,17 @@ if uploaded_file is not None:
     # Sidebar Filters
     st.sidebar.header("Filters")
 
-    state_options = ["All"] + sorted(
-        df["state_code"].dropna().unique().tolist()
-    )
+    state_options = ["All"] + sorted(df["state_code"].dropna().unique().tolist())
+    selected_state = st.sidebar.selectbox("State", state_options)
 
-    selected_state = st.sidebar.selectbox(
-        "State",
-        state_options
-    )
+    loan_type_options = ["All"] + sorted(df["loan_type_label"].dropna().unique().tolist())
+    selected_loan_type = st.sidebar.selectbox("Loan Type", loan_type_options)
 
-    loan_type_options = ["All"] + sorted(
-        df["loan_type_label"].dropna().unique().tolist()
-    )
+    action_options = ["All"] + sorted(df["action_taken_label"].dropna().unique().tolist())
+    selected_action = st.sidebar.selectbox("Action Taken", action_options)
 
-    selected_loan_type = st.sidebar.selectbox(
-        "Loan Type",
-        loan_type_options
-    )
-
-    action_options = ["All"] + sorted(
-        df["action_taken_label"].dropna().unique().tolist()
-    )
-
-    selected_action = st.sidebar.selectbox(
-        "Action Taken",
-        action_options
-    )
-
-    loan_purpose_options = ["All"] + sorted(
-        df["loan_purpose_label"].dropna().unique().tolist()
-    )
-
-    selected_loan_purpose = st.sidebar.selectbox(
-        "Loan Purpose",
-        loan_purpose_options
-    )
+    loan_purpose_options = ["All"] + sorted(df["loan_purpose_label"].dropna().unique().tolist())
+    selected_loan_purpose = st.sidebar.selectbox("Loan Purpose", loan_purpose_options)
 
     # Apply Filters
     filtered_df = filter_dataframe(
@@ -94,7 +67,6 @@ if uploaded_file is not None:
     )
 
     st.success("CSV uploaded successfully!")
-
     st.info(
         "Data cleaned successfully: column names standardized, "
         "numeric fields converted, and duplicate records removed."
@@ -106,199 +78,173 @@ if uploaded_file is not None:
 
     documents = build_mortgage_documents(filtered_df, limit=100)
     chunks = split_documents(documents)
-
-    # Metrics
     metrics = calculate_basic_metrics(filtered_df)
 
-    st.subheader("Key Mortgage Metrics")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    col1.metric(
-        "Total Applications",
-        metrics["total_records"]
+    analytics_tab, insights_tab, copilot_tab, dev_tab = st.tabs(
+        [
+            "📊 Analytics",
+            "🤖 AI Insights",
+            "💬 AI Mortgage Copilot",
+            "⚙️ Developer Tools"
+        ]
     )
 
-    col2.metric(
-        "Approved Loans",
-        metrics["approved_count"]
-    )
+    with analytics_tab:
+        st.subheader("Key Mortgage Metrics")
 
-    col3.metric(
-        "Denied Loans",
-        metrics["denied_count"]
-    )
+        col1, col2, col3, col4 = st.columns(4)
 
-    col4.metric(
-        "Denial Rate",
-        f'{metrics["denial_rate"]}%'
-    )
+        col1.metric("Total Applications", metrics["total_records"])
+        col2.metric("Approved Loans", metrics["approved_count"])
+        col3.metric("Denied Loans", metrics["denied_count"])
+        col4.metric("Denial Rate", f'{metrics["denial_rate"]}%')
 
-    st.metric(
-        "Average Loan Amount",
-        f'${metrics["average_loan_amount"]:,.2f}'
-    )
-
-    # Visual Analytics
-    st.subheader("Mortgage Visual Insights")
-
-    # Loan Type Chart
-    loan_chart = get_chart_data(
-        filtered_df,
-        "loan_type_label"
-    )
-
-    if loan_chart is not None:
-        st.write("### Loan Type Distribution")
-        st.bar_chart(
-            loan_chart.set_index("loan_type_label")
+        st.metric(
+            "Average Loan Amount",
+            f'${metrics["average_loan_amount"]:,.2f}'
         )
 
-    # Action Taken Chart
-    action_chart = get_chart_data(
-        filtered_df,
-        "action_taken_label"
-    )
+        st.subheader("Mortgage Visual Insights")
 
-    if action_chart is not None:
-        st.write("### Action Taken Distribution")
-        st.bar_chart(
-            action_chart.set_index("action_taken_label")
-        )
-
-    # Loan Purpose Chart
-    purpose_chart = get_chart_data(
-        filtered_df,
-        "loan_purpose_label"
-    )
-
-    if purpose_chart is not None:
-        st.write("### Loan Purpose Distribution")
-        st.bar_chart(
-            purpose_chart.set_index("loan_purpose_label")
-        )
-
-    # Top States
-    st.subheader("Top States")
-
-    top_states = get_top_values(
-        filtered_df,
-        "state_code"
-    )
-
-    if top_states is not None:
-        st.bar_chart(top_states)
-    else:
-        st.warning("state_code column not found.")
-
-    st.subheader("RAG Document Preview")
-
-    if st.checkbox("Show generated mortgage documents"):
-        st.write(f"Generated {len(documents)} mortgage documents for AI search.")
-        st.write(f"Generated {len(chunks)} chunks for embeddings.")
-        st.text(documents[0].page_content)
-        st.write("Metadata:")
-        st.json(documents[0].metadata)
-
-    st.subheader("Embedding Test")
-
-    if st.button("Generate Sample Embedding"):
-        with st.spinner("Generating embedding..."):
-            sample_embedding = generate_embedding_for_text(
-                chunks[0].page_content
+        loan_chart = get_chart_data(filtered_df, "loan_type_label")
+        if loan_chart is not None:
+            st.write("### Loan Type Distribution")
+            st.bar_chart(loan_chart.set_index("loan_type_label")
             )
 
-            st.write(f"Embedding generated successfully.")
-            st.write(f"Vector dimensions: {len(sample_embedding)}")
-            st.write(sample_embedding[:10])
-
-    st.subheader("Vector Database")
-
-    if st.button("Create ChromaDB Vector Store"):
-        with st.spinner("Creating vector database..."):
-            vector_store = create_vector_store(chunks)
-
-            st.success("Vector database created successfully!")
-
-            st.write(
-                f"Stored {len(chunks)} mortgage document chunks in ChromaDB."
+        action_chart = get_chart_data(filtered_df, "action_taken_label")
+        if action_chart is not None:
+            st.write("### Action Taken Distribution")
+            st.bar_chart(action_chart.set_index("action_taken_label")
             )
 
-    st.subheader("Semantic Search")
+        purpose_chart = get_chart_data(filtered_df, "loan_purpose_label")
+        if purpose_chart is not None:
+            st.write("### Loan Purpose Distribution")
+            st.bar_chart(purpose_chart.set_index("loan_purpose_label")
+            )
 
-    search_query = st.text_input(
-        "Search mortgage data",
-        placeholder="Example: FHA loans in Texas"
-    )
+        st.subheader("Top States")
+        top_states = get_top_values(filtered_df, "state_code")
 
-    if st.button("Search ChromaDB"):
-        if search_query.strip():
-            with st.spinner("Searching vector database..."):
-                search_results = semantic_search(search_query)
+        if top_states is not None:
+            st.bar_chart(top_states)
+        else:
+            st.warning("state_code column not found.")
 
-                st.success(f"Found {len(search_results)} relevant results.")
+        st.subheader("Dataset Preview")
+        st.dataframe(filtered_df.head())
 
-                for index, result in enumerate(search_results, start=1):
-                    st.write(f"### Result {index}")
-                    st.write(result.page_content)
+        st.subheader("Dataset Schema")
+        st.write(list(df.columns))
+
+    with insights_tab:
+
+        st.subheader("AI Executive Summary")
+
+        if st.button("Generate AI Executive Summary"):
+            with st.spinner("Generating executive summary..."):
+                summary = generate_executive_summary(metrics)
+                st.write(summary)
+
+            st.subheader("Semantic Search")
+
+            search_query = st.text_input(
+                "Search mortgage data",
+                placeholder="Example: FHA loans in Texas"
+            )
+
+            if st.button("Search ChromaDB"):
+                if search_query.strip():
+                    with st.spinner("Searching vector database..."):
+                        search_results = semantic_search(search_query)
+
+                        st.success(f"Found {len(search_results)} relevant results.")
+
+                        for index, result in enumerate(search_results, start=1):
+                            st.write(f"### Result {index}")
+                            st.write(result.page_content)
+                            st.write("Metadata:")
+                            st.json(result.metadata)
+                else:
+                    st.warning("Please enter a search query.")
+        
+        with copilot_tab:
+            st.subheader("AI Mortgage Copilot")
+
+            user_question = st.text_area(
+                "Ask a question about the mortgage data",
+                placeholder="Example: What can you tell me about denied FHA applications in Texas?"
+            )
+
+            if st.button("Ask AI Copilot"):
+                if user_question.strip():
+                    with st.spinner("Retrieving mortgage data and generating answer..."):
+                        answer = answer_mortgage_question(user_question)
+                        st.write(answer)
+                else:
+                    st.warning("Please enter a question.")
+
+        with dev_tab:
+            st.subheader("RAG Document Preview")
+
+            if st.checkbox("Show generated mortgage documents"):
+                st.write(f"Generated {len(documents)} mortgage documents for AI search.")
+                st.write(f"Generated {len(chunks)} chunks for embeddings.")
+
+                if documents:
+                    st.text(documents[0].page_content)
                     st.write("Metadata:")
-                    st.json(result.metadata)
-        else:
-            st.warning("Please enter a search query.")
+                    st.json(documents[0].metadata)
 
-    st.subheader("Retriever Test")
+            st.subheader("Embedding Test")
 
-    retriever_query = st.text_input(
-        "Test retriever",
-        placeholder="Example: denied FHA applications in Texas"
-    )
+            if st.button("Generate Sample Embedding"):
+                if chunks:
+                    with st.spinner("Generating embedding..."):
+                        sample_embedding = generate_embedding_for_text(
+                            chunks[0].page_content
+                        )
 
-    if st.button("Run Retriever"):
-        if retriever_query.strip():
-            with st.spinner("Retrieving relevant mortgage documents..."):
-                retrieved_docs = retrieve_relevant_documents(retriever_query)
+                        st.write(f"Embedding generated successfully.")
+                        st.write(f"Vector dimensions: {len(sample_embedding)}")
+                        st.write(sample_embedding[:10])
 
-                st.success(f"Retrieved {len(retrieved_docs)} documents.")
+            st.subheader("Vector Database")
 
-                for index, doc in enumerate(retrieved_docs, start=1):
-                    st.write(f"### Retrieved Document {index}")
-                    st.write(doc.page_content)
-                    st.write("Metadata:")
-                    st.json(doc.metadata)
-        else:
-            st.warning("Please enter a retriever query.")
+            if st.button("Create ChromaDB Vector Store"):
+                if chunks:
+                    with st.spinner("Creating vector database..."):
+                        vector_store = create_vector_store(chunks)
 
-    st.subheader("AI Mortgage Copilot")
+                        st.success("Vector database created successfully!")
+                        st.write(
+                            f"Stored {len(chunks)} mortgage document chunks in ChromaDB."
+                        )
+                else:
+                    st.warning("No chunks available to store.")
 
-    user_question = st.text_area(
-        "Ask a question about the mortgage data",
-        placeholder="Example: What can you tell me about denied FHA applications in Texas?"
-    )
+            st.subheader("Retriever Test")
 
-    if st.button("Ask AI Copilot"):
-        if user_question.strip():
-            with st.spinner("Retrieving mortgage data and generating answer..."):
-                answer = answer_mortgage_question(user_question)
-                st.write(answer)
-        else:
-            st.warning("Please enter a question.")
+            retriever_query = st.text_input(
+                "Test retriever",
+                placeholder="Example: denied FHA applications in Texas"
+            )
 
-    # Dataset Preview
-    st.subheader("Dataset Preview")
-    st.dataframe(filtered_df.head())
+            if st.button("Run Retriever"):
+                if retriever_query.strip():
+                    with st.spinner("Retrieving relevant mortgage documents..."):
+                        retrieved_docs = retrieve_relevant_documents(retriever_query)
 
-    # Dataset Schema
-    st.subheader("Dataset Schema")
-    st.write(list(df.columns))
+                        st.success(f"Retrieved {len(retrieved_docs)} documents.")
 
-    st.subheader("AI Executive Summary")
-
-    if st.button("Generate AI Executive Summary"):
-        with st.spinner("Generating executive summary..."):
-            summary = generate_executive_summary(metrics)
-            st.write(summary)
+                        for index, doc in enumerate(retrieved_docs, start=1):
+                            st.write(f"### Retrieved Document {index}")
+                            st.write(doc.page_content)
+                            st.write("Metadata:")
+                            st.json(doc.metadata)
+                else:
+                    st.warning("Please enter a retriever query.")
 
 else:
-    st.info(
-        "Please upload a HMDA CSV file to begin."
-    )
+    st.info("Please upload a HMDA CSV file to begin.")
