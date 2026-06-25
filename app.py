@@ -18,7 +18,7 @@ from src.ai_service import generate_executive_summary
 from src.document_builder import build_mortgage_documents
 from src.chunking_service import split_documents
 from src.embedding_service import generate_embedding_for_text
-from src.vector_store import create_vector_store
+from src.vector_store import create_vector_store, semantic_search
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -222,6 +222,28 @@ if uploaded_file is not None:
                 f"Stored {len(chunks)} mortgage document chunks in ChromaDB."
             )
 
+    st.subheader("Semantic Search")
+
+    search_query = st.text_input(
+        "Search mortgage data",
+        placeholder="Example: FHA loans in Texas"
+    )
+
+    if st.button("Search ChromaDB"):
+        if search_query.strip():
+            with st.spinner("Searching vector database..."):
+                search_results = semantic_search(search_query)
+
+                st.success(f"Found {len(search_results)} relevant results.")
+
+                for index, result in enumerate(search_results, start=1):
+                    st.write(f"### Result {index}")
+                    st.write(result.page_content)
+                    st.write("Metadata:")
+                    st.json(result.metadata)
+        else:
+            st.warning("Please enter a search query.")
+
     # Dataset Preview
     st.subheader("Dataset Preview")
     st.dataframe(filtered_df.head())
@@ -233,9 +255,9 @@ if uploaded_file is not None:
     st.subheader("AI Executive Summary")
 
     if st.button("Generate AI Executive Summary"):
-     with st.spinner("Generating executive summary..."):
-         summary = generate_executive_summary(metrics)
-         st.write(summary)
+        with st.spinner("Generating executive summary..."):
+            summary = generate_executive_summary(metrics)
+            st.write(summary)
 
 else:
     st.info(
