@@ -189,7 +189,9 @@ if uploaded_file is not None:
 
     if st.checkbox("Show generated mortgage documents"):
         st.write(f"Generated {len(documents)} mortgage documents for AI search.")
-        st.text(documents[0])
+        st.text(documents[0].page_content)
+        st.write("Metadata:")
+        st.json(documents[0].metadata)
 
     # Dataset Preview
     st.subheader("Dataset Preview")
