@@ -1,3 +1,9 @@
 streamlit
 pandas
 numpy
+openai
+python-dotenv
+langchain
+langchain-openai
+langchain-community
+chromadb

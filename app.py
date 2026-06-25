@@ -14,6 +14,8 @@ from src.data_processor import (
     add_business_labels
 )
 
+from src.ai_service import generate_test_response
+
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
     page_icon="🏠",
@@ -187,6 +189,12 @@ if uploaded_file is not None:
     # Dataset Schema
     st.subheader("Dataset Schema")
     st.write(list(df.columns))
+
+    st.subheader("AI Test")
+
+    if st.button("Test OpenAI Connection"):
+        ai_response = generate_test_response()
+        st.write(ai_response)
 
 else:
     st.info(
