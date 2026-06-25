@@ -19,6 +19,7 @@ from src.document_builder import build_mortgage_documents
 from src.chunking_service import split_documents
 from src.embedding_service import generate_embedding_for_text
 from src.vector_store import create_vector_store, semantic_search
+from src.retrieval_service import retrieve_relevant_documents
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -243,6 +244,28 @@ if uploaded_file is not None:
                     st.json(result.metadata)
         else:
             st.warning("Please enter a search query.")
+
+        st.subheader("Retriever Test")
+
+    retriever_query = st.text_input(
+        "Test retriever",
+        placeholder="Example: denied FHA applications in Texas"
+    )
+
+    if st.button("Run Retriever"):
+        if retriever_query.strip():
+            with st.spinner("Retrieving relevant mortgage documents..."):
+                retrieved_docs = retrieve_relevant_documents(retriever_query)
+
+                st.success(f"Retrieved {len(retrieved_docs)} documents.")
+
+                for index, doc in enumerate(retrieved_docs, start=1):
+                    st.write(f"### Retrieved Document {index}")
+                    st.write(doc.page_content)
+                    st.write("Metadata:")
+                    st.json(doc.metadata)
+        else:
+            st.warning("Please enter a retriever query.")
 
     # Dataset Preview
     st.subheader("Dataset Preview")
