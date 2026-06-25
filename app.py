@@ -16,6 +16,7 @@ from src.data_processor import (
 
 from src.ai_service import generate_executive_summary
 from src.document_builder import build_mortgage_documents
+from src.chunking_service import split_documents
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -100,6 +101,7 @@ if uploaded_file is not None:
     )
 
     documents = build_mortgage_documents(filtered_df, limit=100)
+    chunks = split_documents(documents)
 
     # Metrics
     metrics = calculate_basic_metrics(filtered_df)
@@ -189,6 +191,7 @@ if uploaded_file is not None:
 
     if st.checkbox("Show generated mortgage documents"):
         st.write(f"Generated {len(documents)} mortgage documents for AI search.")
+        st.write(f"Generated {len(chunks)} chunks for embeddings.")
         st.text(documents[0].page_content)
         st.write("Metadata:")
         st.json(documents[0].metadata)
