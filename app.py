@@ -20,6 +20,7 @@ from src.chunking_service import split_documents
 from src.embedding_service import generate_embedding_for_text
 from src.vector_store import create_vector_store, semantic_search
 from src.retrieval_service import retrieve_relevant_documents
+from src.rag_service import answer_mortgage_question
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -245,7 +246,7 @@ if uploaded_file is not None:
         else:
             st.warning("Please enter a search query.")
 
-        st.subheader("Retriever Test")
+    st.subheader("Retriever Test")
 
     retriever_query = st.text_input(
         "Test retriever",
@@ -266,6 +267,21 @@ if uploaded_file is not None:
                     st.json(doc.metadata)
         else:
             st.warning("Please enter a retriever query.")
+
+    st.subheader("AI Mortgage Copilot")
+
+    user_question = st.text_area(
+        "Ask a question about the mortgage data",
+        placeholder="Example: What can you tell me about denied FHA applications in Texas?"
+    )
+
+    if st.button("Ask AI Copilot"):
+        if user_question.strip():
+            with st.spinner("Retrieving mortgage data and generating answer..."):
+                answer = answer_mortgage_question(user_question)
+                st.write(answer)
+        else:
+            st.warning("Please enter a question.")
 
     # Dataset Preview
     st.subheader("Dataset Preview")
