@@ -17,6 +17,7 @@ from src.data_processor import (
 from src.ai_service import generate_executive_summary
 from src.document_builder import build_mortgage_documents
 from src.chunking_service import split_documents
+from src.embedding_service import generate_embedding_for_text
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -195,6 +196,18 @@ if uploaded_file is not None:
         st.text(documents[0].page_content)
         st.write("Metadata:")
         st.json(documents[0].metadata)
+
+    st.subheader("Embedding Test")
+
+    if st.button("Generate Sample Embedding"):
+        with st.spinner("Generating embedding..."):
+            sample_embedding = generate_embedding_for_text(
+                chunks[0].page_content
+            )
+
+            st.write(f"Embedding generated successfully.")
+            st.write(f"Vector dimensions: {len(sample_embedding)}")
+            st.write(sample_embedding[:10])
 
     # Dataset Preview
     st.subheader("Dataset Preview")
