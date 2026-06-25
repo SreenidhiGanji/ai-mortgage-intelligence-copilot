@@ -18,6 +18,7 @@ from src.ai_service import generate_executive_summary
 from src.document_builder import build_mortgage_documents
 from src.chunking_service import split_documents
 from src.embedding_service import generate_embedding_for_text
+from src.vector_store import create_vector_store
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -208,6 +209,18 @@ if uploaded_file is not None:
             st.write(f"Embedding generated successfully.")
             st.write(f"Vector dimensions: {len(sample_embedding)}")
             st.write(sample_embedding[:10])
+
+    st.subheader("Vector Database")
+
+    if st.button("Create ChromaDB Vector Store"):
+        with st.spinner("Creating vector database..."):
+            vector_store = create_vector_store(chunks)
+
+            st.success("Vector database created successfully!")
+
+            st.write(
+                f"Stored {len(chunks)} mortgage document chunks in ChromaDB."
+            )
 
     # Dataset Preview
     st.subheader("Dataset Preview")

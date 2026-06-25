@@ -5,6 +5,7 @@ openai
 python-dotenv
 langchain
 langchain-openai
+langchain_chroma
 langchain-community
 chromadb
 langchain-text-splitters
