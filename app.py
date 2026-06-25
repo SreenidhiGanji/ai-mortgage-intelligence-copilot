@@ -15,6 +15,7 @@ from src.data_processor import (
 )
 
 from src.ai_service import generate_executive_summary
+from src.document_builder import build_mortgage_documents
 
 st.set_page_config(
     page_title="AI Mortgage Intelligence Copilot",
@@ -97,6 +98,8 @@ if uploaded_file is not None:
     st.write(
         f"Showing {len(filtered_df):,} records after applying filters."
     )
+
+    documents = build_mortgage_documents(filtered_df, limit=100)
 
     # Metrics
     metrics = calculate_basic_metrics(filtered_df)
@@ -181,6 +184,12 @@ if uploaded_file is not None:
         st.bar_chart(top_states)
     else:
         st.warning("state_code column not found.")
+
+    st.subheader("RAG Document Preview")
+
+    if st.checkbox("Show generated mortgage documents"):
+        st.write(f"Generated {len(documents)} mortgage documents for AI search.")
+        st.text(documents[0])
 
     # Dataset Preview
     st.subheader("Dataset Preview")
